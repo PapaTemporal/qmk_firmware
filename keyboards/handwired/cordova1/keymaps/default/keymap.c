@@ -7,7 +7,8 @@
 enum custom_keycodes {
     WUP = SAFE_RANGE,
     WPWD,
-    HPWD
+    HPWD,
+    LAYER_TOGGLE
 };
 
 // tap dance declarations
@@ -15,9 +16,32 @@ enum {
     LEFT_GUI_TOGGLE,
 };
 
+void left_gui_toggle(tap_dance_state_t *state, void *user_data) {
+    static bool layer_toggle = false; // keep track of the layer state
+
+    if (state->count == 1) {
+        register_code(KC_LEFT_GUI);
+    } else if (state->count == 2) {
+        layer_toggle = !layer_toggle; // toggle the layer state
+        if (layer_toggle) {
+            layer_on(1);
+            layer_off(0);
+        } else {
+            layer_on(0);
+            layer_off(1);
+        }
+    }
+}
+
+void left_gui_toggle_reset(tap_dance_state_t *state, void *user_data) {
+    if (state->count == 1) {
+        unregister_code(KC_LEFT_GUI);
+    }
+}
+
 // tap dance definitions
 tap_dance_action_t tap_dance_actions[] = {
-    [LEFT_GUI_TOGGLE] = ACTION_TAP_DANCE_DOUBLE(KC_LEFT_GUI, TG(1)),
+    [LEFT_GUI_TOGGLE] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, left_gui_toggle, left_gui_toggle_reset),
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
